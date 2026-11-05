@@ -1,0 +1,15 @@
+name: mr_quantum
+description: MR Quantum engineering calculator
+publish_to: 'none'
+version: 1.0.0+1
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+dependencies:
+  flutter:
+    sdk: flutter
+  webview_flutter: ^4.9.0
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/index.html
+    - assets/decimal.min.js

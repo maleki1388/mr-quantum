@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+<meta charset="utf-8">
+<title>MR Quantum</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+<script src="decimal.min.js"></script>
+<style>
+:root{color-scheme:dark;--a:#8b3dff;--bg:#07040f;--card:#120c22;--key:#171128;--tx:#f2eeff;--mut:#9a90b8;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{background:radial-gradient(circle at 50% 0,color-mix(in srgb,var(--a) 25%,#07040f),var(--bg) 60%);color:var(--tx);font-family:'Vazirmatn',system-ui,sans-serif}
+#app{max-width:480px;margin:auto;height:100%;display:flex;flex-direction:column;padding:8px 12px 0}
+header{text-align:center;font-size:22px;font-weight:600;padding:6px 0 8px;letter-spacing:.5px}
+header b{color:var(--a)}
+main{flex:1;overflow-y:auto;min-height:0}
+section{display:none}section.on{display:block}
+.card{background:var(--card);border:1px solid color-mix(in srgb,var(--a) 45%,transparent);border-radius:18px;padding:12px;margin-bottom:10px;box-shadow:0 0 18px color-mix(in srgb,var(--a) 20%,transparent)}
+#disp{min-height:130px;display:flex;flex-direction:column;justify-content:space-between;direction:ltr}
+.tags{display:flex;justify-content:space-between;color:var(--mut);font-size:13px}
+.tags span{border:1px solid var(--a);color:var(--a);border-radius:8px;padding:1px 8px}
+#expr{text-align:right;font-size:24px;min-height:34px;overflow-x:auto;white-space:nowrap;font-family:Georgia,serif}
+#res{text-align:right;font-size:40px;overflow-x:auto;white-space:nowrap}
+.g{display:grid;gap:7px;margin-bottom:7px;direction:ltr}
+.g5{grid-template-columns:repeat(5,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+button{font:inherit;color:var(--tx);background:var(--key);border:1px solid #ffffff14;border-radius:12px;padding:11px 0;font-size:17px;cursor:pointer}
+button:active{filter:brightness(1.6)}
+.op,.act{background:color-mix(in srgb,var(--a) 70%,#000);border-color:var(--a)}
+.on2{background:var(--a)}
+.eq{width:100%;background:linear-gradient(90deg,color-mix(in srgb,var(--a) 60%,#000),var(--a));padding:13px;font-size:24px;border-radius:22px}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:10px}
+.tabs button{padding:8px 0;font-size:14px}
+.tabs button.on{background:color-mix(in srgb,var(--a) 70%,#000);border-color:var(--a)}
+textarea{width:100%;height:190px;background:transparent;color:#cfc3ff;border:0;resize:none;outline:0;font:14px/1.6 ui-monospace,Menlo,monospace;direction:ltr;white-space:pre}
+#out{direction:ltr;color:#4cf08a;font:18px ui-monospace,monospace;white-space:pre-wrap;min-height:40px}
+.ex{display:grid;grid-template-columns:1fr 1fr;gap:7px}.ex button{text-align:start;padding:10px;font-size:14px}
+.hi{padding:10px;border-bottom:1px solid #ffffff12;direction:ltr;text-align:right;cursor:pointer;overflow-x:auto}
+.hi small{color:var(--mut);display:block}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;flex-wrap:wrap}
+.sw{display:flex;gap:10px;flex-wrap:wrap}.sw i{width:38px;height:38px;border-radius:50%;border:3px solid transparent;cursor:pointer}
+.sw i.on{border-color:#fff}
+.seg button{padding:7px 14px;font-size:14px}
+nav{display:grid;grid-template-columns:repeat(4,1fr);background:var(--card);border:1px solid color-mix(in srgb,var(--a) 45%,transparent);border-radius:20px 20px 0 0;margin:0 -4px}
+nav button{background:none;border:0;border-radius:0;color:var(--mut);font-size:12px;padding:9px 0 8px}
+nav button span{display:block;font-size:20px}
+nav button.on{color:var(--a)}
+</style>
+</head>
+<body>
+<div id="app">
+<header>MR <b>Quantum</b></header>
+<main>
+<section id="p0" class="on">
+ <div class="card" id="disp"><div class="tags"><span id="dm">DEG</span><span id="mm" style="border:0;color:var(--mut)">M</span></div><div id="expr"></div><div id="res"></div></div>
+ <div class="g g5" id="k1"></div><div class="g g5" id="k2"></div><div class="g g5" id="k3"></div><div class="g g5" id="k4"></div>
+ <div class="g g4" id="k5"></div>
+ <button class="eq" id="eq">=</button><div style="height:10px"></div>
+</section>
+<section id="p1">
+ <div class="tabs" id="lt"></div>
+ <div class="card"><textarea id="code" spellcheck="false"></textarea></div>
+ <div class="tabs"><button class="act" id="run">▶ <span data-t="run"></span></button><button id="clr2" data-t="clear"></button><button id="sv" data-t="save"></button><button id="op" data-t="open"></button></div>
+ <div class="card"><div style="color:#4cf08a">✔ <span data-t="output"></span></div><div id="out"></div></div>
+ <div class="card"><div style="margin-bottom:8px" data-t="examples"></div><div class="ex" id="ex"></div></div>
+</section>
+<section id="p2"><div class="card" id="hist"></div><button id="hc" class="act" style="width:100%" data-t="clearhist"></button></section>
+<section id="p3">
+ <div class="card">
+  <div class="row"><span data-t="lang"></span><span class="seg"><button data-l="fa">فارسی</button> <button data-l="en">English</button></span></div>
+  <div class="row"><span data-t="angle"></span><span class="seg"><button data-d="1">DEG</button> <button data-d="0">RAD</button></span></div>
+  <div class="row"><span data-t="prec"></span><span class="seg"><button data-p="50">50</button> <button data-p="200">200</button> <button data-p="1000">1000</button></span></div>
+  <div style="margin:10px 0 6px" data-t="theme"></div><div class="sw" id="sw"></div>
+ </div>
+ <div class="card" style="color:var(--mut);font-size:13px" data-t="note"></div>
+</section>
+</main>
+<nav id="nav"></nav>
+</div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const TX={fa:{calc:'ماشین‌حساب',prog:'برنامه‌نویسی',hist:'تاریخچه',set:'تنظیمات',run:'اجرا',clear:'پاک',save:'ذخیره',open:'باز',output:'خروجی:',examples:'نمونه‌ها',clearhist:'پاک کردن تاریخچه',lang:'زبان',angle:'زاویه',prec:'دقت (رقم)',theme:'رنگ برنامه',err:'خطا',empty:'تاریخچه خالی است',nosup:'اجرای این زبان در مرورگر ممکن نیست. فقط Python و JavaScript اجرا می‌شوند.',saved:'ذخیره شد',note:'دقت محاسبات تا ۱۰۰۰ رقم قابل تنظیم است و محدودیت عددی ندارد (مثلاً 100! یا 2^5000).'},
+en:{calc:'Calculator',prog:'Programmer',hist:'History',set:'Settings',run:'Run',clear:'Clear',save:'Save',open:'Open',output:'Output:',examples:'Examples',clearhist:'Clear history',lang:'Language',angle:'Angle',prec:'Precision (digits)',theme:'App color',err:'Error',empty:'History is empty',nosup:'This language cannot run in the browser. Only Python and JavaScript run.',saved:'Saved',note:'Precision is adjustable up to 1000 digits with no number limit (e.g. 100! or 2^5000).'}};
+const COL=['#8b3dff','#2f7bff','#19c37d','#ff4757','#ff9f1a','#ff4fa3','#17c9d6'];
+let S={lang:'fa',deg:1,prec:200,col:0,shift:0,M:'0',ans:'0'},H=[];
+try{Object.assign(S,JSON.parse(localStorage.getItem('mrq')||'{}'));H=JSON.parse(localStorage.getItem('mrqh')||'[]')}catch(e){}
+const sv=()=>{try{localStorage.setItem('mrq',JSON.stringify(S));localStorage.setItem('mrqh',JSON.stringify(H.slice(0,100)))}catch(e){}};
+const t=k=>TX[S.lang][k];
+
+/* ---------- calculator engine (arbitrary precision) ---------- */
+let PIc={p:0,v:null};
+function setP(){Decimal.set({precision:+S.prec,toExpNeg:-9e15,toExpPos:9e15,maxE:9e15,minE:-9e15,rounding:4})}
+const PI=()=>PIc.p===S.prec?PIc.v:(PIc={p:S.prec,v:Decimal.acos(-1)}).v;
+function fact(v){if(!v.isInt()||v.isNeg()||v.gt(50000))throw 0;let r=new Decimal(1);for(let i=2;v.gte(i);i++)r=r.times(i);return r}
+function evalx(src){
+ setP();const D=Decimal;
+ const T=src.replace(/×/g,'*').replace(/÷/g,'/').replace(/[−–]/g,'-').replace(/π/g,'pi').match(/\d+\.?\d*|\.\d+|[a-zA-Z]+|\S/g)||[];
+ let i=0;const pk=()=>T[i],nx=()=>T[i++];
+ const rad=a=>S.deg?a.times(PI()).div(180):a,bk=a=>S.deg?a.times(180).div(PI()):a;
+ function E(){let v=Tm();while(pk()=='+'||pk()=='-'){const o=nx(),r=Tm();v=o=='+'?v.plus(r):v.minus(r)}return v}
+ function Tm(){let v=U();for(;;){const p=pk();if(p=='*'||p=='/'){nx();const r=U();v=p=='*'?v.times(r):v.div(r)}else if(p&&/^[\d.a-zA-Z(]/.test(p))v=v.times(Pw());else break}return v}
+ function U(){if(pk()=='-'){nx();return U().neg()}if(pk()=='+'){nx();return U()}return Pw()}
+ function Pw(){const b=Pf();if(pk()=='^'){nx();return b.pow(U())}return b}
+ function Pf(){let v=A();while(pk()=='!'){nx();v=fact(v)}return v}
+ function A(){const p=nx();if(p===undefined)throw 0;
+  if(p=='('){const v=E();if(pk()==')')nx();return v}
+  if(/^[\d.]/.test(p))return new D(p);
+  const f=p.toLowerCase();
+  if(f=='pi')return PI();if(f=='e')return new D(1).exp();if(f=='ans')return new D(S.ans);if(f=='m')return new D(S.M);
+  let a;if(pk()=='('){nx();a=E();if(pk()==')')nx()}else a=Pw();
+  switch(f){case'sin':return D.sin(rad(a));case'cos':return D.cos(rad(a));case'tan':return D.tan(rad(a));
+   case'asin':return bk(D.asin(a));case'acos':return bk(D.acos(a));case'atan':return bk(D.atan(a));
+   case'log':return D.log10(a);case'ln':return D.ln(a);case'sqrt':return D.sqrt(a);case'cbrt':return D.cbrt(a);
+   case'abs':return a.abs();case'exp':return a.exp();}
+  throw 0}
+ const v=E();if(i<T.length)throw 0;return v}
+function fmt(d){if(!d.isFinite())throw 0;d=d.toSignificantDigits(Math.max(10,S.prec-8));
+ return Math.abs(d.e)>300?d.toSignificantDigits(60).toExponential():d.toFixed()}
+
+let ex='';
+const render=()=>{$('#expr').textContent=ex;$('#expr').scrollLeft=1e9;$('#dm').textContent=S.deg?'DEG':'RAD';$('#mm').textContent=S.M!='0'?'M='+S.M.slice(0,8):'M'};
+function equals(){if(!ex)return;try{const r=fmt(evalx(ex));S.ans=r;$('#res').textContent='= '+r;$('#res').style.fontSize=r.length>14?'22px':'40px';H.unshift({e:ex,r});sv()}catch(e){$('#res').textContent=t('err');$('#res').style.fontSize='28px'}}
+const KEYS=[
+ [['SHIFT','S'],['ALPHA','A'],['MODE','D'],['⌫','B'],['CLR','C']],
+ [['sin','sin(','sin⁻¹','asin('],['cos','cos(','cos⁻¹','acos('],['tan','tan(','tan⁻¹','atan('],['log','log(','10ˣ','10^('],['ln','ln(','eˣ','e^(']],
+ [['x²','^2','x²','^2'],['x³','^3','x³','^3'],['xʸ','^'],['√','sqrt(','∛','cbrt('],['!','!']],
+ [['π','π'],['e','e'],['(','('],[')',')'],['Ans','Ans']],
+ [['7','7'],['8','8'],['9','9'],['÷','÷','','','op']],[['4','4'],['5','5'],['6','6'],['×','×','','','op']],[['1','1'],['2','2'],['3','3'],['−','−','','','op']],[['0','0'],['.','.'],['M','M'],['+','+','','','op']]];
+function build(){const ids=['#k1','#k2','#k3','#k4'];KEYS.slice(0,4).forEach((r,n)=>$(ids[n]).innerHTML=r.map((k,j)=>`<button data-n="${n}" data-j="${j}">${S.shift&&k[2]?k[2]:k[0]}</button>`).join(''));
+ $('#k5').innerHTML=KEYS.slice(4).map((r,n)=>r.map((k,j)=>`<button class="${k[4]||''}" data-n="${n+4}" data-j="${j}">${k[0]}</button>`).join('')).join('')}
+document.addEventListener('click',e=>{const b=e.target.closest('button[data-n]');if(!b)return;const k=KEYS[+b.dataset.n][+b.dataset.j];
+ if(k[1]=='S'){S.shift^=1;build();return}
+ if(k[1]=='A'){S.M=S.ans;sv();render();return}
+ if(k[1]=='D'){S.deg^=1;sv();render();return}
+ if(k[1]=='B'){ex=ex.replace(/(sin|cos|tan|asin|acos|atan|log|ln|sqrt|cbrt|Ans)\($|(Ans)$|.$/u,'');render();return}
+ if(k[1]=='C'){ex='';$('#res').textContent='';render();return}
+ ex+=(S.shift&&k[3])?k[3]:k[1];if(S.shift){S.shift=0;build()}render()});
+$('#eq').onclick=equals;
+
+/* ---------- programmer ---------- */
+const EXS={
+python:{'Hello World':'print("Hello, World!")','Factorial':'def factorial(n):\n    if n == 0:\n        return 1\n    return n * factorial(n - 1)\n\nprint(factorial(5))','Fibonacci':'a = 0\nb = 1\nfor i in range(10):\n    print(a)\n    t = a + b\n    a = b\n    b = t','Prime Check':'n = 29\nok = True\nfor i in range(2, n):\n    if n % i == 0:\n        ok = False\nprint(ok)','Area of Circle':'r = 5\nprint(3.14159 * r * r)','Matrix Sum':'m = [[1, 2], [3, 4]]\ntotal = 0\nfor row in m:\n    for x in row:\n        total = total + x\nprint(total)'},
+js:{'Hello World':'console.log("Hello, World!")','Factorial':'const f = n => n == 0 ? 1 : n * f(n - 1);\nconsole.log(f(5));','Fibonacci':'let a=0,b=1;\nfor(let i=0;i<10;i++){console.log(a);[a,b]=[b,a+b]}'},
+cpp:{'Hello World':'#include <iostream>\nint main(){\n  std::cout << "Hello";\n}'},java:{'Hello World':'public class Main {\n  public static void main(String[] a){\n    System.out.println("Hello");\n  }\n}'}};
+let lang='python';
+const LN=[['python','🐍 Python'],['cpp','C++'],['java','☕ Java'],['js','JS']];
+function langs(){$('#lt').innerHTML=LN.map(l=>`<button data-g="${l[0]}" class="${l[0]==lang?'on':''}">${l[1]}</button>`).join('');
+ $('#ex').innerHTML=Object.keys(EXS[lang]).map(k=>`<button data-x="${k}">${k} ▶</button>`).join('')}
+function py2js(src){const out=[],st=[0];const split=s=>{let d=0,p=[],c='';for(const ch of s){if('([{'.includes(ch))d++;if(')]}'.includes(ch))d--;if(ch==','&&!d){p.push(c);c=''}else c+=ch}p.push(c);return p.map(x=>x.trim())};
+ const ex=s=>s.replace(/\bTrue\b/g,'true').replace(/\bFalse\b/g,'false').replace(/\bNone\b/g,'null').replace(/\band\b/g,'&&').replace(/\bor\b/g,'||').replace(/\bnot\b/g,'!').replace(/print\(/g,'__p(').replace(/(\w+)\s*\/\/\s*(\w+)/g,'Math.floor($1/$2)');
+ for(let ln of src.split('\n')){ln=ln.replace(/\s+#.*$/,'').replace(/^\s*#.*$/,'');if(!ln.trim())continue;const ind=ln.match(/^ */)[0].length;let s=ln.trim();
+  while(ind<st[st.length-1]){st.pop();out.push('}')}
+  let m;
+  if(m=s.match(/^def (\w+)\((.*)\):$/)){out.push(`function ${m[1]}(${m[2]}){`);st.push(ind+1)}
+  else if(m=s.match(/^for (\w+) in range\((.*)\):$/)){const a=split(m[1+1]);const[lo,hi]=a.length>1?[a[0],a[1]]:['0',a[0]];out.push(`for(let ${m[1]}=${ex(lo)};${m[1]}<${ex(hi)};${m[1]}++){`);st.push(ind+1)}
+  else if(m=s.match(/^for (\w+) in (.*):$/)){out.push(`for(let ${m[1]} of ${ex(m[2])}){`);st.push(ind+1)}
+  else if(m=s.match(/^(if|while) (.*):$/)){out.push(`${m[1]}(${ex(m[2])}){`);st.push(ind+1)}
+  else if(m=s.match(/^elif (.*):$/)){out.push(`else if(${ex(m[1])}){`);st.push(ind+1)}
+  else if(s=='else:'){out.push('else{');st.push(ind+1)}
+  else out.push(ex(s)+';');
+  if(/\{$/.test(out[out.length-1])&&st[st.length-1]<=ind)st[st.length-1]=ind+1;}
+ while(st.length>1){st.pop();out.push('}')}return out.join('\n')}
+function fp(v){return Array.isArray(v)?'['+v.map(fp).join(', ')+']':v===true?'True':v===false?'False':v===null?'None':String(v)}
+function runCode(){const o=$('#out');if(lang=='cpp'||lang=='java'){o.textContent=t('nosup');return}
+ let buf=[];const P=(...a)=>buf.push(a.map(fp).join(' '));
+ try{const code=lang=='python'?py2js($('#code').value):$('#code').value;
+  new Function('__p','console','len','sum','abs','max','min','sqrt','str','int',code)(P,{log:P},x=>x.length,x=>x.reduce((a,b)=>a+b,0),Math.abs,Math.max,Math.min,Math.sqrt,String,x=>Math.trunc(x));
+  o.style.color='#4cf08a';o.textContent=buf.join('\n')||'✔'}catch(e){o.style.color='#ff6b7a';o.textContent=t('err')+': '+e.message}}
+$('#run').onclick=runCode;
+$('#clr2').onclick=()=>{$('#code').value='';$('#out').textContent=''};
+$('#sv').onclick=()=>{try{localStorage.setItem('mrqc_'+lang,$('#code').value);$('#out').style.color='#4cf08a';$('#out').textContent=t('saved')}catch(e){}};
+$('#op').onclick=()=>{try{const v=localStorage.getItem('mrqc_'+lang);if(v!=null)$('#code').value=v}catch(e){}};
+document.addEventListener('click',e=>{let b=e.target.closest('[data-g]');if(b){lang=b.dataset.g;langs();$('#code').value=Object.values(EXS[lang])[0];$('#out').textContent='';return}
+ b=e.target.closest('[data-x]');if(b){$('#code').value=EXS[lang][b.dataset.x];runCode()}});
+
+/* ---------- history, settings, nav ---------- */
+function hist(){$('#hist').innerHTML=H.length?H.map((h,i)=>`<div class="hi" data-h="${i}"><small>${h.e}</small>= ${h.r.length>40?h.r.slice(0,40)+'…':h.r}</div>`).join(''):`<div style="color:var(--mut)">${t('empty')}</div>`}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-h]');if(b){ex=H[+b.dataset.h].e;$('#res').textContent='';render();go(0)}});
+$('#hc').onclick=()=>{H=[];sv();hist()};
+function sett(){$('#sw').innerHTML=COL.map((c,i)=>`<i data-c="${i}" style="background:${c}" class="${i==S.col?'on':''}"></i>`).join('');
+ $$('[data-l]').forEach(b=>b.classList.toggle('on2',b.dataset.l==S.lang));$$('[data-d]').forEach(b=>b.classList.toggle('on2',+b.dataset.d==S.deg));$$('[data-p]').forEach(b=>b.classList.toggle('on2',+b.dataset.p==S.prec));
+ document.documentElement.style.setProperty('--a',COL[S.col])}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-c],[data-l],[data-d],[data-p]');if(!b)return;
+ if(b.dataset.c!=null)S.col=+b.dataset.c;if(b.dataset.l)S.lang=b.dataset.l;if(b.dataset.d!=null)S.deg=+b.dataset.d;if(b.dataset.p)S.prec=+b.dataset.p;sv();sett();txt();render()});
+function txt(){document.documentElement.lang=S.lang;$$('[data-t]').forEach(n=>n.textContent=t(n.dataset.t));$('#run').innerHTML='▶ '+t('run');$('#note,[data-t=note]');nav();hist()}
+let cur=0;const NV=[['🧮','calc'],['💻','prog'],['🕘','hist'],['⚙️','set']];
+function nav(){$('#nav').innerHTML=NV.map((n,i)=>`<button data-v="${i}" class="${i==cur?'on':''}"><span>${n[0]}</span>${t(n[1])}</button>`).join('')}
+function go(i){cur=i;$$('section').forEach((s,j)=>s.classList.toggle('on',i==j));nav();if(i==2)hist()}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-v]');if(b)go(+b.dataset.v)});
+build();langs();$('#code').value=EXS.python.Factorial;sett();txt();render();
+</script>
+</body>
+</html>
